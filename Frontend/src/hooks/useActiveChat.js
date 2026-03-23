@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-
+import { chats as chatsApi } from "@/lib/api";
 
 const WELCOME = (name) =>
-  `Welcome back, ${name}!\n\nWhat are we watching tonight? Tell me your mood, a genre, or a film you love — I'll find your next obsession.`;
+  `🎬 Welcome back, ${name}!\n\nWhat are we watching tonight? Tell me your mood, a genre, or a film you love — I'll find your next obsession.`;
 
-const WELCOME_NEW = "New session — what are you in the mood for tonight?";
+const WELCOME_NEW = "🎬 New session — what are you in the mood for tonight?";
 
 export function useActiveChat({ onChatCreated, onChatUpdated }) {
   const [messages,        setMessages]        = useState([]);
@@ -68,7 +68,7 @@ export function useActiveChat({ onChatCreated, onChatUpdated }) {
     } catch (err) {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: `Lol nothing for you yet.\n\n_${err.message}_` },
+        { role: "assistant", content: `The projection booth went dark.\n\n_${err.message}_` },
       ]);
     } finally {
       setLoading(false);

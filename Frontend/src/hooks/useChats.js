@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { chats as chatsApi } from "@/lib/api";
 
 export function useChats() {
   const [chats,   setChats]   = useState([]);
@@ -7,6 +8,7 @@ export function useChats() {
   const loadChats = useCallback(async () => {
     setLoading(true);
     try {
+      const { chats: list } = await chatsApi.list();
       setChats(list);
       return list;
     } finally {
