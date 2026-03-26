@@ -4,6 +4,7 @@ import AuthScreen from "@/components/AuthScreen";
 import Sidebar    from "@/components/Sidebar";
 import ChatView   from "@/components/ChatView"; 
 
+import { useAuth }       from "@/hooks/useAuth";
 import { useChats }      from "@/hooks/useChats";
 import { useActiveChat } from "@/hooks/useActiveChat";
 
@@ -20,10 +21,7 @@ const BG = {
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-
- 
-  const user = { username: "Guest" };
-  const authLoading = false;
+  const { user, authLoading, login, register, logout } = useAuth();
 
   const {
     sortedChats,
@@ -49,10 +47,9 @@ export default function App() {
     onChatUpdated: (chatId, fields) => refreshChat(chatId, fields),
   });
 
- 
+  // Load chats & open most recent when user logs in
   useEffect(() => {
-
-
+    if (!user) return;
     loadChats().then((list) => {
       if (list.length > 0) {
         openChat(list[0]);
@@ -60,9 +57,12 @@ export default function App() {
         startNewChat({ name: user.username });
       }
     });
-  }, []);  
+  }, [user]);  // eslint-disable-line react-hooks/exhaustive-deps
 
- 
+  const handleLogout = () => {
+    logout();
+    startNewChat();
+  };
 
   const handleNewChat = useCallback(() => {
     startNewChat();
@@ -80,13 +80,23 @@ export default function App() {
       if (remaining.length > 0) openChat(remaining[0]);
       else startNewChat({ name: user?.username });
     }
-  }, [activeChatId, sortedChats, deleteChat, openChat, startNewChat]);
+  }, [activeChatId, sortedChats, deleteChat, openChat, startNewChat, user]);
 
- 
+  if (authLoading) {
+    return (
+      <div style={{ height:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"#000" }}>
+        <div style={{ color:"rgba(201,168,76,0.5)", fontFamily:"'DM Sans',sans-serif", fontSize:13, letterSpacing:"0.1em" }}>
+          LOADING…
+        </div>
+      </div>
+    );
+  }
 
-  const activeChatTitle =
-    sortedChats.find((c) => c.id === activeChatId)?.title ||
-    "New Conversation";
+  if (!user) {
+    return <AuthScreen onLogin={login} onRegister={register} />;
+  }
+
+  const activeChatTitle = sortedChats.find((c) => c.id === activeChatId)?.title || "New Conversation";
 
   return (
     <div style={{ display:"flex", height:"100vh", overflow:"hidden", ...BG, fontFamily:"'DM Sans',sans-serif", color:"#e8e0d0" }}>
@@ -98,7 +108,7 @@ export default function App() {
         onNewChat={handleNewChat}
         onSelectChat={handleSelectChat}
         onDeleteChat={handleDeleteChat}
-        
+        onLogout={handleLogout}
       />
       <ChatView
         activeChatTitle={activeChatTitle}

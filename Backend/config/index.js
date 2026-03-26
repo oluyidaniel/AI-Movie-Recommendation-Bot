@@ -14,7 +14,7 @@ export const config = {
     url:        process.env.LLM_SERVICE_URL || "http://localhost:8000",
   },
   frontend: {
-    url:        process.env.FRONTEND_URL || "http://localhost:3000",
+    url:        process.env.FRONTEND_URL || "http://localhost:5173",
   },
   db: {
     path:       process.env.DB_PATH || "./db/cineai.db",

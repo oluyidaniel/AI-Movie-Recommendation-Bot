@@ -3,7 +3,7 @@ const BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 // ── Token helpers ─────────────────────────────────────────────────────────────
 
 export const token = {
-  get:    ()      => localStorage.getItem("cineai_token"),
+  get:    () => localStorage.getItem("cineai_token"),
   set:    (t)     => localStorage.setItem("cineai_token", t),
   clear:  ()      => localStorage.removeItem("cineai_token"),
 };

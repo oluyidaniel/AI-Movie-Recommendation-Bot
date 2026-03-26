@@ -4,32 +4,41 @@ import db from "../db/database.js";
 
 const SALT_ROUNDS = 12;
 
-const stmts = {
-  findByUsername: db.prepare("SELECT * FROM users WHERE username = ?"),
-  findById:       db.prepare("SELECT id, username, created_at FROM users WHERE id = ?"),
-  insert:         db.prepare(
-    "INSERT INTO users (id, username, password) VALUES (?, ?, ?)"
-  ),
-};
-
-// ── Register ──────────────────────────────────────────────────────────────
-
+// === Register ===
 export async function registerUser(username, password) {
-  const existing = stmts.findByUsername.get(username.toLowerCase());
+  username = username.toLowerCase();
+
+  // Check if user exists
+  const existing = await db.get(
+    "SELECT * FROM users WHERE username = ?",
+    [username]
+  );
+
   if (existing) {
     throw Object.assign(new Error("Username already taken."), { status: 409 });
   }
 
+  // Hash password and insert
   const hash = await bcrypt.hash(password, SALT_ROUNDS);
   const id   = uuid();
-  stmts.insert.run(id, username.toLowerCase(), hash);
-  return { id, username: username.toLowerCase() };
+
+  await db.run(
+    "INSERT INTO users (id, username, password) VALUES (?, ?, ?)",
+    [id, username, hash]
+  );
+
+  return { id, username };
 }
 
-// ── Login ─────────────────────────────────────────────────────────────────
-
+// === Login ===
 export async function authenticateUser(username, password) {
-  const user = stmts.findByUsername.get(username.toLowerCase());
+  username = username.toLowerCase();
+
+  const user = await db.get(
+    "SELECT * FROM users WHERE username = ?",
+    [username]
+  );
+
   if (!user) {
     throw Object.assign(new Error("Invalid credentials."), { status: 401 });
   }
@@ -42,8 +51,12 @@ export async function authenticateUser(username, password) {
   return { id: user.id, username: user.username };
 }
 
-// ── Find ──────────────────────────────────────────────────────────────────
+// === Find ===
+export async function getUserById(id) {
+  const user = await db.get(
+    "SELECT id, username, created_at FROM users WHERE id = ?",
+    [id]
+  );
 
-export function getUserById(id) {
-  return stmts.findById.get(id) || null;
+  return user || null;
 }
